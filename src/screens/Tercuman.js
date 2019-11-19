@@ -6,40 +6,42 @@ import RNFetchBlob from 'rn-fetch-blob';
 import  TextInputt  from "../components/TextInputt";
 import TextInputMask from 'react-native-text-input-mask';
 import InputMask from "../components/InputMask";
-
+import AutoTags from 'react-native-tag-autocomplete';
 
 const H = Dimensions.get('screen').height;
 const W = Dimensions.get('screen').width;
 
 
 
-export default class Tercuman extends Component {
+export default class Hizmet extends Component {
   constructor() {
  
     super()
  
     this.state = {
       
-      ImageSource2:null,
+      
       ImageSource: null,
       data: null,
-      data2:null,
+      
+      diller:'',
+      tagsSelected: [],
 
-     iban:false,
-     paypal:false,
-     kredikarti:false,
-     bankahesabı:false, 
+      iban:false,
+      paypal:false,
+      kredikarti:false,
+      bankahesabı:false, 
      
 
       Adi: '',
       Soyadi: '',
-      Aranilan_dil: '',
+      Aranilandil: '',
       Telefon:'',
       Email:'',
       Password:'',
       İban:'',
       Paypal:'',
-      Kredi_Karti:'',
+      Kredi_karti:'',
       Banka_Hesabi:'',
       Onay_Kodu:''
  
@@ -117,22 +119,21 @@ export default class Tercuman extends Component {
   }
   uploadImageToServer = () => {
  
-    RNFetchBlob.fetch('POST', 'https://reactnativedeneme.000webhostapp.com/upload_image.php', {
+    RNFetchBlob.fetch('POST', 'http://192.168.1.29/User_Project/upload_image.php', {
       Authorization: "Bearer access-token",
       otherHeader: "foo",
       'Content-Type': 'multipart/form-data',
     }, [
-        { name: 'image', filename: 'image.png', type: 'image/png', data: this.state.data, data2: this.state.data2 }
+        { name: 'image', filename: 'image.png', data: this.state.data}
       ]).then((resp) => {
  
         var tempMSG = resp.data;
-        var tempMSG2= resp.data2;
  
         tempMSG = tempMSG.replace(/^"|"$/g, '');
-        tempMSG2= tempMSG2.replace(/^"|"$/g, '');
+ 
         Alert.alert(
           'Alert Title',
-          tempMSG,tempMSG2,
+          tempMSG,
           [
             {text: 'Ask me later', onPress: () => console.log('Ask me later pressed')},
             {
@@ -143,7 +144,7 @@ export default class Tercuman extends Component {
             {text: 'OK', onPress: () => console.log('OK Pressed')},
           ],
           {cancelable: false},
-        );
+        );;
  
       }).catch((err) => {
         // ...
@@ -151,9 +152,11 @@ export default class Tercuman extends Component {
  
   }
 
-UserRegistrationFunction = () =>{
- 
-  fetch('https://reactnativedeneme.000webhostapp.com/user_registration.php', {
+
+
+ UserRegistrationFunction = () =>{
+
+  fetch('http://192.168.1.29/User_Project/hizmet.php', {
     method: 'POST',
     headers: {
       'Accept': 'application/json',
@@ -165,23 +168,24 @@ UserRegistrationFunction = () =>{
   
       soyadi: this.state.Soyadi,
   
-      aranilan_dil: this.state.Aranilan_dil,
+      aranilandil: this.state.Aranilandil,
 
       telefon: this.state.Telefon,
-  
+      
       email: this.state.Email,
-
+      
       password:this.state.Password,
-  
+      
       iban: this.state.İban,
-
+      
       paypal:this.state.Paypal,
-
+      
       kredikarti:this.state.Kredi_Karti,
-
+      
       bankahesabi:this.state.Banka_Hesabi,
-
-      onay: this.state.Onay_Kodu
+      
+      onaykodu: this.state.Onay_Kodu
+      
   
     })
   
@@ -207,7 +211,7 @@ UserRegistrationFunction = () =>{
         }).catch((error) => {
           console.error(error);
         });
- 
+      
 }
  
 validates = () => { 
@@ -227,71 +231,96 @@ validates = () => {
   } 
 
 }
+handleDelete = index => {
+  //tag deleted, remove from our tags array
+  let tagsSelected = this.state.tagsSelected;
+  tagsSelected.splice(index, 1);
+  this.setState({ tagsSelected });
+}
+
+handleAddition = dil => {
+  //suggestion clicked, push it to our tags array
+  this.setState({ tagsSelected: this.state.tagsSelected.concat([dil]) });
+}
+
+componentDidMount() {
+  return fetch('http://192.168.1.29/User_Project/diller.php')
+    .then((response) => response.json())
+    .then((responseJson) => {
+    this.setState({Aranilandil:responseJson})
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+}
 
 kayitol = () => {
-
+  const { Adi }  = this.state ;
+  const { Soyadi }  = this.state ;
+  const { Telefon }  = this.state ;
+  const { Aranilandil }  = this.state ;
+  const { Email }  = this.state ;
+  const { Password }  = this.state ;
+  
+if (Adi||Soyadi||Telefon||Aranilandil||Email||Password !='') {
+ this.UserRegistrationFunction&&this.uploadImageToServer
+} else {
+  Alert.alert('')
+ 
 }
+}
+
   render() {
     return (
       
       <SafeAreaView>
       <ScrollView >
- 
-      <TextInputt  
-      placeholder='Dil' 
-      returnKeyType='go'
-      onChangeText={aranilan_dil => this.setState({Aranilan_dil : aranilan_dil})}
-      />
+      <View style={{alignItems:'center'}}>
+
+      <AutoTags
+            suggestions={this.state.Aranilandil}
+            tagsSelected={this.state.tagsSelected}
+            handleAddition={this.handleAddition}
+            handleDelete={this.handleDelete}
+          /> 
+
+          </View>
+      
     
       <TextInputt  
       placeholder='Adınız' 
-      onChangeText={adi => this.setState({Adi : adi})}
+      onChangeText={text => this.setState({Adi : text})}
       />
       
       <TextInputt 
       placeholder='Soyadınız' 
-      onChangeText={soyadi => this.setState({Soyadi : soyadi})}
+      onChangeText={text => this.setState({Soyadi : text})}
       />
+
      <TouchableOpacity onPress={this.selectPhotoTapped.bind(this)}>
           <View style={styles.ImageContainer}>
 
-            {this.state.ImageSource === null ? <Text>Diplomanızı Yükleyin</Text> :
+            {this.state.ImageSource === null ? <Text>Kimlik Seçin</Text> :
               <Image style={styles.ImageContainer} source={this.state.ImageSource} />
             }
           </View>
       </TouchableOpacity>
-          
-      <TouchableOpacity onPress={this.selectPhotoTapped2.bind(this)}>
-          <View style={styles.ImageContainer}>
 
-            {this.state.ImageSource2 === null ? <Text>Kimliğinizi Yükleyin</Text> :
-              <Image style={styles.ImageContainer} source={this.state.ImageSource2} />
-            }
-
-          </View>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={this.selectPhotoTapped2.bind(this)}>
-          <View style={styles.ImageContainer}>
-
-            {this.state.ImageSource2 === null ? <Text>Resim Yükleyin</Text> :
-              <Image style={styles.ImageContainer} source={this.state.ImageSource2} />
-            }
-
-          </View>
-      </TouchableOpacity>
+      <Button title="Kimlik yükle" onPress={this.uploadImageToServer}/>   
+     
      <TextInputt 
       placeholder='Emailiniz' 
       keyboardType='email-address'
-      onChangeText={email => this.setState({Email : email})}
+      onChangeText={text => this.setState({Email : text})}
       />
       <TextInputt 
       placeholder='Şifre oluşturun' 
-      onChangeText={password => this.setState({Password : password})}
+      onChangeText={text => this.setState({Password : text})}
       />
      <InputMask
         keyboardType='phone-pad'
         placeholder='Telefonunuz'   
-        onChangeText={telefon => this.setState({Telefon : telefon})}
+        onChangeText={text => this.setState({Telefon : text})}
         mask={"+90 ([000]) [000] [00] [00]"}
       />
 <Text style={{alignSelf:'center',margin:10}}>Ödeme Yöntemini Seçin</Text>
@@ -301,7 +330,10 @@ kayitol = () => {
     <CheckBox 
       style={styles.checkbox}
       onChange={()=>{
+        text => this.setState({Email : text})
           this.setState({iban:!this.state.iban,kredikarti:false,bankahesabı:false,paypal:false})
+ 
+
       }}
       checked={this.state.iban}
       label={"İban"}/>
@@ -338,25 +370,30 @@ kayitol = () => {
     <View> 
    
       {this.state.iban==true ? 
-      <TextInputMask 
+      <InputMask 
+      keyboardType='phone-pad'
       placeholder='Ödeme Alımı iban' 
       onChangeText={iban => this.setState({İban: iban})}
       mask={"TR[00] [0000] [0000] [0000] [0000] [0000] [00]"}
       />
       :this.state.paypal==true ? 
-      <TextInputMask
+      <InputMask
+      keyboardType='email-address'
       placeholder='Ödeme Alımı Paypal' 
       onChangeText={paypal => this.setState({Paypal: paypal})}
-      mask={"[0000] [0000] [0000] [0000]"}
       />:this.state.kredikarti==true ? 
-      <TextInputMask 
+      
+      <InputMask 
+      keyboardType='phone-pad'
       placeholder='Ödeme Alımı Kredi Kartı' 
       onChangeText={kredikarti => this.setState({Kredi_Karti: kredikarti})}
       mask={"[0000] [0000] [0000] [0000]"}
-      />:this.state.bankahesabi==true ? 
-      <TextInputMask
-      placeholder='Ödeme Alımı Kredi Kartı' 
-      onChangeText={kredikarti => this.setState({Kredi_Karti: kredikarti})}
+      />:this.state.bankahesabı==true ? 
+      
+      <InputMask
+      keyboardType='phone-pad'
+      placeholder='Ödeme Alımı Banka Hesabı' 
+      onChangeText={bankahesabi => this.setState({Banka_Hesabi: bankahesabi})}
       mask={"[0000] [0000] [0000] [0000]"}
       />
       :null }
@@ -364,15 +401,17 @@ kayitol = () => {
 
       
 
-    <TextInputt 
+    <TextInputt
+      style={{margin:20}} 
       placeholder='Onay Kodu' 
       onChangeText={onay_Kodu => this.setState({Onay_Kodu : onay_Kodu})}
       />
 
-      <Text style={{fontSize: 18, color:"#000",paddingBottom:20}}>{"\n"}</Text>
+    
 
 
-      <Button title="Kayıt" onPress={this.UserRegistrationFunction||this.uploadImageToServer}/>
+      
+      <Button title="Kayıt" onPress={this.UserRegistrationFunction}/>
       </ScrollView>
       </SafeAreaView>
     )
@@ -401,6 +440,20 @@ const styles = StyleSheet.create({
       checkbox:{
          width:W/5
       },
+      input: {
+        flex: 1,
+        color: "#000",
+        alignSelf: "center",
+        marginLeft: 16,
+        paddingTop: 14,
+        paddingRight: 5,
+        paddingBottom: 8,
+        borderColor: "#D9D5DC",
+        borderBottomWidth: 1,
+        fontSize: 16,
+        
+        fontFamily: "roboto-regular",
+        lineHeight: 16},
      
       TextInputStyle: {
      
