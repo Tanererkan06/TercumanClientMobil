@@ -23,7 +23,7 @@ export default class Giris extends Component {
 	 const { UserPassword }  = this.state ;
 	 
 	 
-	fetch('https://reactnativedeneme.000webhostapp.com/User_Login.php', {
+	fetch('http://192.168.8.137/User_Project/User_Login.php', {
 	  method: 'POST',
 	  headers: {
 		'Accept': 'application/json',
@@ -45,7 +45,7 @@ export default class Giris extends Component {
 			{
 	 
 				//Then open Profile activity and send user email to profile activity.
-				this.props.navigation.navigate('Profil');
+				this.props.navigation.navigate('Webrtc');
 	 
 			}
 			else{
